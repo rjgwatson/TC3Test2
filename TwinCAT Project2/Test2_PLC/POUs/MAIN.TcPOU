@@ -1,13 +1,39 @@
-<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1">
-  <POU Name="MAIN" Id="{40a29346-b9ff-4067-855e-fa294bfdfdf9}">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="MAIN" Id="{40a29346-b9ff-4067-855e-fa294bfdfdf9}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
+	fTestReal		: REAL;
+	bTestBool		: BOOL;
+	nCycleTime		: UDINT;
+	nCycleTime_ms	: INT;
+	nTime			: INT;
+	nPeriod_ms		: INT;
+	nAmplitude		: INT;
+	
+	fbGetCurTaskIndex	: GETCURTASKINDEX;
 END_VAR
-]]>
-    </Declaration>
+]]></Declaration>
     <Implementation>
-      <ST><![CDATA[]]></ST>
+      <ST><![CDATA[fbGetCurTaskIndex();
+nCycleTime := _TaskInfo[fbGetCurTaskIndex.index].CycleTime;
+nCycleTime_ms := UDINT_TO_INT(nCycleTime/10000);
+
+//Set Sinusoid Amplitude and Period
+nAmplitude := 100;
+nPeriod_ms := 10000;
+
+//Do 1 sinusoid per second
+nTime := (nTime + nCycleTime_ms) MOD nPeriod_ms;
+
+fTestReal := INT_TO_REAL(nAmplitude)*SIN(2*PI*INT_TO_REAL(nTime)/INT_TO_REAL(nPeriod_ms));
+
+GVL.nTestValue := REAL_TO_INT(fTestReal);
+]]></ST>
     </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="18" Count="13" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
   </POU>
 </TcPlcObject>
